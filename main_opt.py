@@ -39,6 +39,7 @@ def get_top_track(file: str) -> Dict[str, int]:
     return top_track
 
 
+# Top song = When u came into my life - folamore
 def combine_jsons(json_dir, files):
 
     # Combine all the json's into one big one
@@ -56,36 +57,66 @@ def combine_jsons(json_dir, files):
 
 
 
+def how_many_songs(combined_json):
+    song_ids = []
 
+    null = None
+    with open(combined_json, "r", encoding="utf-8") as f:
+        json_string = json.load(f)
 
-"""
-    Get most played song of all time:
+    for track in json_string:
+        id = track.get("spotify_track_uri")
+        if id == null:
+            continue
+        else:
+            song_ids.append(id)
 
-    IDEA
-    for each json:
-        for each track:
-            new_json's = count occurrences of that track 
-        
-    for each new_json:
-        for each track:
-            overall_counts_json = add up the plays from each new_json    
-    
-    most_played_song = max_overall_counts_json
+    return len(set(song_ids))
 
-"""
+def total_listening_time(combined_json):
+    total_played = 0
+
+    null = None
+    with open(combined_json, "r", encoding="utf-8") as f:
+        json_string = json.load(f)
+
+    for track in json_string:
+        ms_played = track.get("ms_played")
+        if ms_played == null:
+            continue
+        else:
+            total_played += int(ms_played)
+
+    return total_played
+
+def ms_to_days_hours_minutes(milliseconds):
+    # Convert milliseconds to seconds
+    seconds = milliseconds / 1000
+
+    # Calculate days, hours, and minutes
+    minutes, seconds = divmod(seconds, 60)
+    hours, minutes = divmod(minutes, 60)
+    days, hours = divmod(hours, 24)
+
+    return days, hours, minutes
 
 def main():
     ext_history_dir = ".\\Spotify Extended Streaming History"
     json_name       = "Streaming_History_Audio"
+    combined_jsons_path = ".\\combined_json.json"
 
     files = get_json_files(dir=ext_history_dir, name=json_name)
 
     # combine_jsons(ext_history_dir, files)
     # return
     
-    winner = get_top_track(".\\combined_json.json")
+    # winner = get_top_track(".\\combined_json.json")
+    total_time_ms = total_listening_time(combined_jsons_path)
+    days, hours, minutes = ms_to_days_hours_minutes(total_time_ms)
     
-    print("Top track all time: ", json.dumps(winner, indent=3))   # This isn't my all time top track this is the track i've listened to most in one year
+    print("Total tracks listened to:", how_many_songs(combined_jsons_path))   
+    print(f"Total listening time: {days} days, {hours} hours and {minutes} minutes.")   
+
 
 if __name__ == "__main__":
     main()
